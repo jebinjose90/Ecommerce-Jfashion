@@ -1593,12 +1593,12 @@ module.exports = {
       } else {
         // Calculate new price
         const newPrice = item.price * newQuantity;
-        const newDiscountPrice = item.discount_amount * newQuantity;
+        const newDiscountPrice = ((item.price - item.discount) * newQuantity);;
 
         // Update the quantity in the database
         const updateResult = await cartCollection.updateOne(
           { _id: pid },
-          { $set: { quantity: newQuantity } }
+          { $set: { quantity: newQuantity} }
         );
 
         if (updateResult.modifiedCount === 1) {
@@ -1647,12 +1647,12 @@ module.exports = {
       const customerId = item.customerid;
       const newQuantity = Math.max(item.quantity - 1, 1);
       const newPrice = item.price * newQuantity;
-      const newDiscountPrice = item.discount_amount * newQuantity;
+      const newDiscountPrice = ((item.price - item.discount) * newQuantity);
 
       // Update the quantity in the database
       await cartCollection.updateOne(
         { _id: pid },
-        { $set: { quantity: newQuantity } }
+        { $set: { quantity: newQuantity} }
       );
 
       // Calculate the overall total price (sum of prices for all items in the cart)
