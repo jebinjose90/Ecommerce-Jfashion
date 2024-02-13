@@ -13,6 +13,7 @@ const wishlistCollectionName = "wishlistDb";
 const walletCollectionName = "walletDb";
 const couponCollectionName = "couponDb";
 const offerCollectionName = "offerDb";
+const bannerCollectionName = "bannerDb";
 
 
 var userSchema = new mongoose.Schema({
@@ -83,8 +84,7 @@ var addressSchema = new mongoose.Schema({
     ref: userCollectionName,
     required: true
   }
-},
-  {
+},{
     addressCollection: addressCollectionName
   });
 
@@ -171,6 +171,15 @@ const productSchema = new mongoose.Schema({
   }
 }, {
   productCollection: productCollectionName
+});
+
+const bannerSchema = new mongoose.Schema({
+  image: {
+    type: [String],
+    required: false
+  }
+}, {
+  bannerCollection: bannerCollectionName
 });
 
 const wishlistSchema = new mongoose.Schema({
@@ -396,6 +405,7 @@ const wishlist_Collection = new mongoose.model(wishlistCollectionName, wishlistS
 const wallet_Collection = new mongoose.model(walletCollectionName, walletSchema)
 const coupon_Collection = new mongoose.model(couponCollectionName, couponSchema)
 const offer_Collection = new mongoose.model(offerCollectionName, offerSchema)
+const banner_Collection = new mongoose.model(bannerCollectionName, bannerSchema)
 
 module.exports = {
   userCollection: user_collection,
@@ -408,5 +418,6 @@ module.exports = {
   wishlistCollection: wishlist_Collection,
   walletCollection: wallet_Collection,
   couponCollection: coupon_Collection,
-  offerCollection: offer_Collection
+  offerCollection: offer_Collection,
+  bannerCollection: banner_Collection
 };

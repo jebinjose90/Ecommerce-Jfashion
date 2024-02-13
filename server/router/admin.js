@@ -48,6 +48,7 @@ const checkSession = async (req, res, next) => {
 
 router.get('/admin_login', controller.getAdminLogin);
 router.get('/dashboard', checkSession, controller.getDashboard);
+router.get('/banner', checkSession, controller.getAllBanners);
 router.get('/generate-pdf',checkSession,controller.getGeneratePdf)
 router.get('/salesreport',checkSession,controller.getExcelReport)
 router.get('/all_customers', checkSession, controller.getAllCustomers);
@@ -64,6 +65,7 @@ router.get('/edit_coupon/:id', checkSession, controller.getEditCoupon);
 router.get('/edit_product_offer/:id', checkSession, controller.getEditProductOffer);
 router.get('/edit_category_offer/:id', checkSession, controller.getEditCategoryOffer);
 router.get('/delete_coupon/:id',checkSession, controller.getDeleteCoupon);
+router.get('/delete_banner/:id',checkSession, controller.getDeleteBanner);
 router.get('/offer_list', checkSession, controller.getAllOffers);
 router.get('/delete_offer/:id',checkSession, controller.getDeleteOffer);
 router.get('/add_product_offer', checkSession, controller.getAddProductOffer);
@@ -71,6 +73,7 @@ router.get('/add_category_offer', checkSession, controller.getAddCategoryOffer);
 router.get('/order_list', checkSession, controller.getAllOrderLists);
 router.get('/change_status', checkSession, controller.getChangeStatus);
 router.get('/admin_Logout', controller.getAdminLogout);
+router.get('/add_banner', controller.getAddBanner);
 router.post('/admin_login', controller.postAdminLogin);
 router.post('/edit_customer', controller.postEditCustomer);
 router.post('/add_category', controller.postAddCategory);
@@ -82,6 +85,6 @@ router.post('/add_product', upload_img, controller.postAddProduct);
 router.post('/removeProduct',checkSession, controller.postRemoveProduct)
 router.post('/changeDeliveryStatus', controller.postChangeDeliveryStatus)
 router.post('/edit_product', upload_img, controller.postEditProduct);
-
+router.post('/add_banner', uploadImg, controller.postAddBanner);
 
 module.exports = router;

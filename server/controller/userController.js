@@ -19,6 +19,7 @@ const wishlistCollection = db.wishlistCollection;
 const walletCollection = db.walletCollection;
 const offerCollection = db.offerCollection;
 const couponCollection = db.couponCollection;
+const bannerCollection = db.bannerCollection
 
 const currencySymbol = countryDetails.India.currencySymbol;
 
@@ -52,7 +53,7 @@ function generateRandomString(length) {
 // Function to calculate overall total price
 const calculateOverallTotalPrice = async (id) => {
   const userCartTotalPrice = await cartCollection.aggregate([
-    { $match: { userid: new ObjectId(id) } },
+    { $match: { userid: new ObjectId(String(id)) } },
     { $group: { _id: null, totalPrice: { $sum: { $multiply: ["$quantity", "$price"] } } } }
   ]);
   // Extract totalQuantity from the result (it will be an array with one element)
@@ -108,12 +109,13 @@ module.exports = {
   getjfashion: async (req, res) => {
     try {
       const userCartItems = await cartCollection.find({ userid: req.userId });
+      const banner_Details = await bannerCollection.find()
       // Return all quantities from the user's cart
       const userCartQuantities = userCartItems.map(item => item.quantity);
       const totalQuantity = userCartQuantities.reduce((acc, value) => acc + value, 0);
       console.log('User Cart Quantities:', totalQuantity);
       const userDetails = await userCollection.findById(req.userId);
-      res.render('user/jfashion', { title: 'JFASHION', userDetails: userDetails, cartQuantity: totalQuantity });
+      res.render('user/jfashion', { title: 'JFASHION', userDetails: userDetails, bannerDetails: banner_Details, cartQuantity: totalQuantity });
     } catch (error) {
       console.error('Error rendering view:', error);
       res.render('error', error.message);
@@ -123,12 +125,13 @@ module.exports = {
   getHome: async (req, res) => {
     try {
       const userCartItems = await cartCollection.find({ userid: req.userId });
+      const banner_Details = await bannerCollection.find()
       // Return all quantities from the user's cart
       const userCartQuantities = userCartItems.map(item => item.quantity);
       const totalQuantity = userCartQuantities.reduce((acc, value) => acc + value, 0);
       console.log('User Cart Quantities:', totalQuantity);
       const userDetails = await userCollection.findById(req.userId);
-      res.render('user/home', { title: 'HOME', userDetails: userDetails, cartQuantity: totalQuantity });
+      res.render('user/home', { title: 'HOME', userDetails: userDetails, bannerDetails: banner_Details, cartQuantity: totalQuantity });
     } catch (error) {
       console.error('Error rendering view:', error);
       res.render('error', error.message);
@@ -230,6 +233,7 @@ module.exports = {
         totalPages: totalPages,
         currentPage: currentPage,
         limit: limit,
+        categoryDetails: subCategoryOptions,
         productDetails: products,
         currency: currencySymbol,
         userDetails: userDetails,
@@ -514,7 +518,8 @@ module.exports = {
 
   getOrderConfirmed: async (req, res) => {
     try {
-      const userOrderedItems = await orderCollection.findOne({ userId: new ObjectId(req.userId) });
+      console.log("USERID",req.userId);
+      const userOrderedItems = await orderCollection.findOne({ userId: new ObjectId(String(req.userId)) });
       console.log("USER DETAILS", userOrderedItems);
       res.render('user/orderConfirmed', { title: 'ORDER CONFIRMED', userOrder: userOrderedItems });
     } catch (error) {
@@ -534,7 +539,7 @@ module.exports = {
       // Update the specific product within the productcollection array
       await orderCollection.findOneAndUpdate(
         {
-          "productcollection._id": new ObjectId(productId)
+          "productcollection._id": new ObjectId(String(productId))
         },
         {
           $set: {
@@ -545,9 +550,9 @@ module.exports = {
       );
 
       const aggregationResult = await orderCollection.aggregate([
-        { $match: { _id: new ObjectId(orderId) } },
+        { $match: { _id: new ObjectId(String(orderId)) } },
         { $unwind: "$productcollection" },
-        { $match: { "productcollection._id": new ObjectId(productId) } },
+        { $match: { "productcollection._id": new ObjectId(String(productId)) } },
         {
           $project: {
             product_total_price: "$productcollection.product_total_price",
@@ -583,7 +588,7 @@ module.exports = {
       // Return all quantities from the user's cart
       const userCartQuantities = userCartItems.map(item => item.quantity);
       const totalQuantity = userCartQuantities.reduce((acc, value) => acc + value, 0);
-      const userCartOrderItems = await orderCollection.find();
+      const userCartOrderItems = await orderCollection.find({ userId: req.userId });
       const userDetails = await userCollection.findById(req.userId);
       // console.log("userCartOrderItems___________", userCartOrderItems);
       console.log('User Cart Quantities:', totalQuantity);
@@ -637,7 +642,7 @@ module.exports = {
       const walletBalance = await walletCollection.aggregate([
         {
           $match: {
-            userid: new ObjectId(req.userId)
+            userid: new ObjectId(String(req.userId))
           }
         },
         {
@@ -791,7 +796,7 @@ module.exports = {
           const userCartQuantities = userCartItems.map(item => item.quantity);
           const totalQuantity = userCartQuantities.reduce((acc, value) => acc + value, 0);
           const userCartTotalPrice = await cartCollection.aggregate([
-            { $match: { userid: new ObjectId(req.userId) } },
+            { $match: { userid: new ObjectId(String(req.userId)) } },
             { $group: { _id: null, totalPrice: { $sum: { $multiply: ["$quantity", "$price"] } } } }
           ]);
           // Extract totalQuantity from the result (it will be an array with one element)
@@ -819,12 +824,12 @@ module.exports = {
       const userCartQuantities = userCartItems.map(item => item.quantity);
       const totalQuantity = userCartQuantities.reduce((acc, value) => acc + value, 0);
       const userCartTotalPrice = await cartCollection.aggregate([
-        { $match: { userid: new ObjectId(req.userId) } },
+        { $match: { userid: new ObjectId(String(req.userId)) } },
         { $group: { _id: null, totalPrice: { $sum: { $multiply: ["$quantity", "$price"] } } } }
       ]);
       const userDetails = await userCollection.findById(req.userId);
       const walletBalance = await walletCollection.aggregate([
-        { $match: { userid: new ObjectId(req.userId) } },
+        { $match: { userid: new ObjectId(String(req.userId)) } },
         {
           $group: {
             _id: "$userid",
@@ -872,7 +877,7 @@ module.exports = {
       const totalQuantity = userCartQuantities.reduce((acc, value) => acc + value, 0);
 
       const userCartTotalPrice = await cartCollection.aggregate([
-        { $match: { userid: new ObjectId(req.userId) } },
+        { $match: { userid: new ObjectId(String(req.userId)) } },
         { $group: { _id: null, totalPrice: { $sum: { $multiply: ["$quantity", "$price"] } }, discount: { $sum: { $multiply: ["$quantity", "$discount"] } }, totalDiscountPrice: { $sum: { $multiply: ["$quantity", "$discounted_price"] } } } }
       ]);
 
@@ -957,7 +962,7 @@ module.exports = {
 
       // Find all documents in cartCollection for the given userid
       const userCartTotalQuantity = await cartCollection.aggregate([
-        { $match: { userid: new ObjectId(_id) } },
+        { $match: { userid: new ObjectId(String(_id)) } },
         { $group: { _id: null, totalQuantity: { $sum: "$quantity" } } }
       ]);
       // Extract totalQuantity from the result (it will be an array with one element)
@@ -1041,7 +1046,7 @@ module.exports = {
       console.log("itemProOffer", itemProOffer)
       console.log("itemCatOffer", itemCatOffer)
       const totalQuantity = await cartCollection.aggregate([
-        { $match: { userid: new ObjectId(_id) } },
+        { $match: { userid: new ObjectId(String(_id)) } },
         { $group: { _id: null, totalQuantity: { $sum: "$quantity" } } }
       ]);
       const userDetails = await userCollection.findById(req.userId);
@@ -1371,7 +1376,7 @@ module.exports = {
             const oldAndNewPasswordMatch = await bcrypt.compare(new_password, existingUser.password);
             if (!oldAndNewPasswordMatch) {
               const hashedPassword = await bcrypt.hash(new_password, 10);
-              const filter = { _id: new ObjectId(user_id) };
+              const filter = { _id: new ObjectId(String(user_id)) };
               const update = { $set: { password: hashedPassword } }
               await userCollection.updateOne(filter, update);
 
@@ -1680,17 +1685,20 @@ module.exports = {
   postOrderConfirmed: async (req, res) => {
     try {
       console.log("ORDER_CONFIRMED__________________", req.body);
-      const user_id = req.body.user_id;
-      const coupon_id = req.body.coupon_id;
-      console.log("user_id", user_id);
-      const usercart = await cartCollection.find({ userid: user_id });
-      const totalCount = await cartCollection.countDocuments({ userid: user_id });
+
+      console.log("user_id", req.body.user_id);
+      const usercart = await cartCollection.find({ userid: req.body.user_id });
+      const totalCount = await cartCollection.countDocuments({ userid: req.body.user_id });
       console.log("usercart", usercart);
-      const userAddress = await addressCollection.findOne({ _id: new ObjectId(req.body.selectedAddress) });
+      const userAddress = await addressCollection.findOne({ _id: req.body.selectedAddress });
       console.log("userAddress", userAddress);
-      const userDetails = await userCollection.findOne({ _id: new ObjectId(user_id) });
+      const userDetails = await userCollection.findOne({ _id: req.body.user_id });
       console.log("CART DETAILS____", usercart);
-      const couponDetails = await couponCollection.findOne({ _id: new ObjectId(coupon_id) })
+      let couponDetails
+      if (req.body.coupon_id != 0) {
+        couponDetails = await couponCollection.findOne({ _id: req.body.coupon_id })
+      }
+      
 
       if (!userDetails.firstName && !userDetails.lastName) {
         throw new Error('Enter First Name and Last Name');
@@ -1757,7 +1765,7 @@ module.exports = {
 
 
         const orderData = {
-          userId: user_id,
+          userId: req.body.user_id,
           username: userDetails.username, // Assuming username is the same for all cart items
           full_name: userDetails.firstName + ' ' + userDetails.lastName,
           phoneNumber: userDetails.phoneNumber,
@@ -1770,7 +1778,7 @@ module.exports = {
 
         if (req.body.paymentMode === "Wallet") {
           const walletData = {
-            userid: user_id,
+            userid: req.body.user_id,
             price: orderTotalAmount,
             date: new Date(),
             status: "debited"
@@ -1784,12 +1792,12 @@ module.exports = {
 
         let orders = userDetails.totalOrders;
         orders += 1;
-        const filter = { _id: new ObjectId(user_id) };
+        const filter = { _id: req.body.user_id };
         const update = { $set: { totalOrders: orders, totalSpent: totalAmount } }
         await userCollection.updateOne(filter, update);
 
         // Delete user's cart
-        await cartCollection.deleteMany({ userid: user_id });
+        await cartCollection.deleteMany({ userid: req.body.user_id });
 
         res.redirect('/orderConfirmed')
         // Update product stock

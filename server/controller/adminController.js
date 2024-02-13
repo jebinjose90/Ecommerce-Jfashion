@@ -14,6 +14,7 @@ const userCollection = db.userCollection;
 const orderCollection = db.orderCollection;
 const couponCollection = db.couponCollection;
 const offerCollection = db.offerCollection;
+const bannerCollection = db.bannerCollection;
 
 const { currencySymbol, country, std } = countryDetails.India;
 
@@ -193,7 +194,7 @@ module.exports = {
       doc.end();
     } catch (error) {
       console.error("Error generating PDF:", error);
-      res.status(500).send("Internal Server Error");
+      res.status(500).send("Internal Server Error");
     }
   },
 
@@ -264,6 +265,30 @@ module.exports = {
     } catch (error) {
       console.error("Error creating or sending Excel file:", error);
       res.status(500).send("Internal Server Error");
+    }
+  },
+
+  getAllBanners: async (req, res) => {
+    try {
+      console.log("banner_list")
+      const bannCollection = await bannerCollection.find();
+      console.log("BANNER-DATA" + bannCollection);
+      res.render('admin/banner_list', { title: 'BANNER', bannerDetails: bannCollection });
+    } catch (error) {
+      console.error('Error rendering all_customers view page:', error);
+      res.render('error');
+    }
+  },
+
+  getAddBanner: async (req, res) => {
+    try {
+      console.log("banner_list")
+      const bannCollection = await bannerCollection.find();
+      console.log("BANNER-DATA" + bannCollection);
+      res.render('admin/add_banner', { title: 'ADD BANNER', bannerDetails: bannCollection });
+    } catch (error) {
+      console.error('Error rendering all_customers view page:', error);
+      res.render('error');
     }
   },
 
@@ -842,6 +867,22 @@ module.exports = {
     }
   },
 
+  getDeleteBanner: async (req, res) => {
+    try {
+      console.log("req.params.id", req.params.id);
+      const _id = req.params.id
+      await bannerCollection.findByIdAndDelete(_id)
+        .then(async () => {
+          const bannCollection = await bannerCollection.find();
+          console.log("BANNER-DATA" + bannCollection);
+          res.render('admin/banner_list', { title: 'BANNER', bannerDetails: bannCollection });
+        })
+    } catch (error) {
+      console.error('Error rendering delete product:', error);
+      res.render('error');
+    }
+  },
+
   getEditProductOffer: async (req, res) => {
     try {
       const _id = req.params.id
@@ -1264,7 +1305,7 @@ module.exports = {
       });
     } catch (err) {
       console.error(err);
-      res.status(500).send("Internal Server Error");
+      res.status(500).send("Internal Server Error");
     }
   },
 
@@ -1375,6 +1416,30 @@ module.exports = {
           currency: currencySymbol,
           message: 'Add product failed. An error occurred while inserting data.'
         });
+    }
+  },
+
+
+  postAddBanner: async (req, res) => {
+    try {
+      console.log("FILE", req.files);
+      if (req.files && req.files.length > 0) {
+        const imageData = {
+          image: req.files.map((file) => file.path.substring(file.path.indexOf('/uploads/')))
+        };
+        console.log("imageData", imageData);
+        // Insert the data into the collection
+        await bannerCollection.insertMany([imageData]); // Assuming you want to insert a single document
+        const bannCollection = await bannerCollection.find();
+          console.log("BANNER-DATA" + bannCollection);
+          res.render('admin/banner_list', { title: 'BANNER', bannerDetails: bannCollection });
+      } else {
+        const bannCollection = await bannerCollection.find();
+          console.log("BANNER-DATA" + bannCollection);
+          res.render('admin/banner_list', { title: 'BANNER', bannerDetails: bannCollection });
+      }
+    } catch (error) {
+      console.error('Error inserting data:', error);
     }
   },
 
